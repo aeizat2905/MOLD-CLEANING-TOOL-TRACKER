@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MoldTool Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #0b0f18;
+  --bg2:     #111827;
+  --bg3:     #1a2235;
+  --panel:   #1e2a40;
+  --panel2:  #243047;
+  --border:  #2e3f5c;
+  --accent:  #3b9eff;
+  --acc-dk:  #1a6fd4;
+  --green:   #22c97a;
+  --yellow:  #f5b700;
+  --red:     #f04060;
+  --orange:  #f07830;
+  --text:    #e8f0fe;
+  --text2:   #7a9ac0;
+  --text3:   #3d5a80;
+  --glow:    0 0 28px rgba(59,158,255,0.25);
+  --radius:  16px;
+  --font:    'Nunito', sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html, body { height:100%; background:var(--bg); color:var(--text); font-family:var(--font); overflow-x:hidden; }
+body::before {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+  background-image: radial-gradient(circle, rgba(59,158,255,0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* ── PAGES ── */
+.page { display:none; position:relative; z-index:1; }
+.page.active { display:flex; flex-direction:column; min-height:100vh; }
+
+/* ── ONBOARDING ── */
+.onboard-wrap {
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:36px 20px; gap:28px;
+}
+.brand { text-align:center; }
+.brand-icon { font-size:64px; display:block; margin-bottom:12px; filter:drop-shadow(0 0 24px rgba(59,158,255,0.5)); }
+.brand-name {
+  font-size:40px; font-weight:900; letter-spacing:4px; text-transform:uppercase;
+  background:linear-gradient(120deg,#fff 10%,var(--accent));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+}
+.brand-sub { font-size:14px; color:var(--text2); letter-spacing:2px; margin-top:6px; font-weight:700; }
+
+.step-label {
+  font-size:15px; font-weight:800; letter-spacing:2px; text-transform:uppercase;
+  color:var(--text2); text-align:center;
+}
+.step-label span { color:var(--accent); }
+
+/* Big role cards */
+.big-cards { display:flex; flex-direction:column; gap:14px; width:100%; max-width:420px; }
+.big-card {
+  background:var(--panel); border:2px solid var(--border); border-radius:var(--radius);
+  padding:22px 24px; cursor:pointer; transition:all .2s ease;
+  display:flex; align-items:center; gap:18px;
+  position:relative; overflow:hidden;
+}
+.big-card::before { content:''; position:absolute; inset:0; border-radius:var(--radius); opacity:0; transition:opacity .2s; }
+.big-card:active, .big-card:hover { transform:scale(1.02); }
+.big-card.c-op  { border-color:rgba(34,201,122,.35); }
+.big-card.c-op::before { background:linear-gradient(135deg,rgba(34,201,122,.07),transparent); }
+.big-card.c-op:hover  { border-color:var(--green); box-shadow:0 0 24px rgba(34,201,122,.2); }
+.big-card.c-op:hover::before { opacity:1; }
+.big-card.c-ad  { border-color:rgba(59,158,255,.35); }
+.big-card.c-ad::before { background:linear-gradient(135deg,rgba(59,158,255,.07),transparent); }
+.big-card.c-ad:hover  { border-color:var(--accent); box-shadow:var(--glow); }
+.big-card.c-ad:hover::before { opacity:1; }
+.big-card.c-mg  { border-color:rgba(245,183,0,.35); }
+.big-card.c-mg::before { background:linear-gradient(135deg,rgba(245,183,0,.07),transparent); }
+.big-card.c-mg:hover  { border-color:var(--yellow); box-shadow:0 0 24px rgba(245,183,0,.2); }
+.big-card.c-mg:hover::before { opacity:1; }
+.big-card.c-vd  { border-color:rgba(240,120,48,.35); }
+.big-card.c-vd::before { background:linear-gradient(135deg,rgba(240,120,48,.07),transparent); }
+.big-card.c-vd:hover  { border-color:var(--orange); box-shadow:0 0 24px rgba(240,120,48,.2); }
+.big-card.c-vd:hover::before { opacity:1; }
+.big-card-icon { font-size:44px; line-height:1; flex-shrink:0; }
+.big-card-title { font-size:22px; font-weight:900; letter-spacing:1px; }
+.c-op .big-card-title { color:var(--green); }
+.c-ad .big-card-title { color:var(--accent); }
+.c-mg .big-card-title { color:var(--yellow); }
+.big-card-desc { font-size:15px; color:var(--text2); margin-top:4px; line-height:1.4; font-weight:600; }
+
+/* Shift buttons */
+.shift-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; width:100%; max-width:420px; }
+.shift-btn {
+  background:var(--panel); border:2px solid var(--border); border-radius:var(--radius);
+  padding:24px 16px; text-align:center; cursor:pointer; transition:all .2s;
+}
+.shift-btn:hover, .shift-btn:active { border-color:var(--accent); background:var(--panel2); transform:scale(1.03); box-shadow:var(--glow); }
+.shift-btn .s-letter { font-size:52px; font-weight:900; color:var(--accent); line-height:1; }
+.shift-btn .s-label  { font-size:15px; font-weight:800; color:var(--text2); margin-top:6px; letter-spacing:1px; }
+
+/* Identity form */
+.id-block { width:100%; max-width:420px; display:flex; flex-direction:column; gap:18px; }
+.id-label { display:block; font-size:17px; font-weight:800; color:var(--text2); margin-bottom:8px; }
+.id-inp {
+  width:100%; background:var(--bg3); border:2px solid var(--border); color:var(--text);
+  font-family:var(--font); font-size:20px; font-weight:700; padding:16px 18px;
+  border-radius:12px; outline:none; transition:border-color .2s;
+}
+.id-inp:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(59,158,255,.15); }
+.id-inp::placeholder { color:var(--text3); }
+
+.back-btn {
+  display:inline-flex; align-items:center; gap:8px; align-self:flex-start;
+  font-size:17px; font-weight:800; color:var(--text2);
+  background:none; border:none; cursor:pointer; padding:4px 0; transition:color .2s;
+}
+.back-btn:hover { color:var(--text); }
+
+.proceed-btn {
+  width:100%; max-width:420px;
+  background:var(--acc-dk); color:#fff; font-family:var(--font);
+  font-size:20px; font-weight:900; border:none; border-radius:var(--radius);
+  padding:18px; cursor:pointer; transition:all .2s; letter-spacing:1px;
+}
+.proceed-btn:hover, .proceed-btn:active { background:var(--accent); box-shadow:var(--glow); transform:scale(1.01); }
+.proceed-btn:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+
+/* ── TOPBAR ── */
+.topbar {
+  background:var(--bg2); border-bottom:2px solid var(--border);
+  height:64px; display:flex; align-items:center; justify-content:space-between;
+  padding:0 20px; flex-shrink:0;
+}
+.tb-left { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.tb-logo { font-size:20px; font-weight:900; letter-spacing:2px; color:var(--accent); }
+.badge { font-size:13px; font-weight:800; padding:5px 12px; border-radius:20px; letter-spacing:1px; }
+.badge-op  { background:rgba(34,201,122,.15); color:var(--green);  border:2px solid rgba(34,201,122,.3); }
+.badge-ad  { background:rgba(59,158,255,.15); color:var(--accent); border:2px solid rgba(59,158,255,.3); }
+.badge-mg  { background:rgba(245,183,0,.15);  color:var(--yellow); border:2px solid rgba(245,183,0,.3); }
+.badge-vd  { background:rgba(240,120,48,.15); color:var(--orange); border:2px solid rgba(240,120,48,.3); }
+.badge-shift { background:var(--panel); color:var(--accent); border:2px solid var(--border); }
+.exit-btn {
+  background:rgba(240,64,96,.12); color:var(--red); border:2px solid rgba(240,64,96,.25);
+  font-family:var(--font); font-size:15px; font-weight:800; padding:9px 16px;
+  border-radius:10px; cursor:pointer; transition:all .2s; white-space:nowrap;
+}
+.exit-btn:hover { background:rgba(240,64,96,.22); }
+
+/* ── CONTENT ── */
+.content { flex:1; padding:20px; overflow-y:auto; padding-bottom:100px; }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position:fixed; bottom:0; left:0; right:0;
+  background:var(--bg2); border-top:2px solid var(--border);
+  display:flex; z-index:100;
+  padding-bottom:env(safe-area-inset-bottom,8px);
+}
+.bnav-item {
+  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:12px 4px; cursor:pointer; transition:all .2s; gap:4px;
+  font-size:13px; font-weight:800; letter-spacing:.5px;
+  color:var(--text3); border-top:3px solid transparent;
+}
+.bnav-item.active { color:var(--accent); border-top-color:var(--accent); }
+.bnav-item .ni { font-size:24px; }
+
+/* ── SECTION HEADERS ── */
+.sec-title { font-size:22px; font-weight:900; letter-spacing:2px; text-transform:uppercase; margin-bottom:4px; }
+.sec-sub { font-size:15px; color:var(--text2); margin-bottom:20px; font-weight:600; }
+
+/* ── STAT CARDS ── */
+.stats-row { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-bottom:20px; }
+.stat-c { background:var(--panel); border:2px solid var(--border); border-radius:var(--radius); padding:18px 16px; position:relative; overflow:hidden; }
+.stat-c::after { content:''; position:absolute; top:0; right:0; width:50px; height:50px; border-radius:0 var(--radius) 0 50px; opacity:.12; }
+.stat-c.bl::after { background:var(--accent); }
+.stat-c.gr::after { background:var(--green); }
+.stat-c.ye::after { background:var(--yellow); }
+.stat-c.re::after { background:var(--red); }
+.stat-l { font-size:13px; color:var(--text3); letter-spacing:1px; text-transform:uppercase; margin-bottom:6px; font-weight:700; }
+.stat-v { font-size:36px; font-weight:900; line-height:1; }
+.stat-c.bl .stat-v { color:var(--accent); }
+.stat-c.gr .stat-v { color:var(--green); }
+.stat-c.ye .stat-v { color:var(--yellow); }
+.stat-c.re .stat-v { color:var(--red); }
+.stat-m { font-size:13px; color:var(--text2); margin-top:4px; font-weight:600; }
+
+/* ── TOOL CARDS ── */
+.tool-card { background:var(--panel); border:2px solid var(--border); border-radius:var(--radius); padding:18px; margin-bottom:12px; }
+.tool-card.ok   { border-left:6px solid var(--green); }
+.tool-card.warn { border-left:6px solid var(--yellow); }
+.tool-card.low  { border-left:6px solid var(--red); }
+.tc-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; gap:8px; flex-wrap:wrap; }
+.tc-name { font-size:18px; font-weight:800; }
+.tc-cat { font-size:12px; font-weight:800; padding:4px 10px; border-radius:6px; letter-spacing:1px; }
+.cat-copper { background:rgba(240,120,48,.15); color:var(--orange); }
+.cat-metal  { background:rgba(59,158,255,.15); color:var(--accent); }
+.cat-other  { background:rgba(106,138,170,.12); color:var(--text2); }
+.tc-nums { display:flex; gap:20px; align-items:flex-end; }
+.tc-num-item { text-align:center; }
+.tc-num-label { font-size:12px; color:var(--text3); letter-spacing:1px; font-weight:700; margin-bottom:2px; }
+.tc-num-val { font-size:30px; font-weight:900; line-height:1; }
+.ok   .tc-num-val.cur { color:var(--green); }
+.warn .tc-num-val.cur { color:var(--yellow); }
+.low  .tc-num-val.cur { color:var(--red); }
+.tc-num-val.std { color:var(--text2); font-size:22px; }
+.tc-sep { font-size:24px; color:var(--text3); padding-bottom:2px; }
+.status-pill { font-size:13px; font-weight:800; padding:6px 14px; border-radius:20px; letter-spacing:1px; flex-shrink:0; }
+.pill-ok   { background:rgba(34,201,122,.15);  color:var(--green);  border:2px solid rgba(34,201,122,.3); }
+.pill-warn { background:rgba(245,183,0,.15);   color:var(--yellow); border:2px solid rgba(245,183,0,.3); }
+.pill-low  { background:rgba(240,64,96,.15);   color:var(--red);    border:2px solid rgba(240,64,96,.3); }
+.tc-bar { height:8px; background:var(--bg3); border-radius:4px; margin-top:12px; overflow:hidden; }
+.tc-fill { height:100%; border-radius:4px; transition:width .5s cubic-bezier(.4,0,.2,1); }
+.tc-fill.ok   { background:var(--green); }
+.tc-fill.warn { background:var(--yellow); }
+.tc-fill.low  { background:var(--red); }
+
+/* ── UPDATE CARDS ── */
+.upd-card { background:var(--panel); border:2px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:14px; }
+.upd-name { font-size:19px; font-weight:800; margin-bottom:4px; }
+.upd-std  { font-size:15px; color:var(--text2); font-weight:700; margin-bottom:14px; }
+.upd-std span { color:var(--accent); font-size:17px; font-weight:900; }
+.qty-ctrl { display:flex; align-items:center; gap:12px; }
+.qty-btn {
+  background:var(--bg3); border:2px solid var(--border); color:var(--text);
+  font-size:30px; width:60px; height:60px; border-radius:12px;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition:all .15s; font-weight:900; user-select:none;
+}
+.qty-btn:hover, .qty-btn:active { border-color:var(--accent); color:var(--accent); background:rgba(59,158,255,.1); }
+.qty-inp {
+  background:var(--bg3); border:2px solid var(--border); color:var(--text);
+  font-family:var(--font); font-size:34px; font-weight:900;
+  text-align:center; flex:1; height:60px; border-radius:12px; outline:none; transition:border-color .2s;
+}
+.qty-inp:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(59,158,255,.15); }
+.qty-deficit { font-size:15px; color:var(--red); font-weight:800; margin-top:10px; display:none; background:rgba(240,64,96,.1); padding:8px 12px; border-radius:8px; border:1px solid rgba(240,64,96,.25); }
+.qty-deficit.show { display:block; }
+
+/* ── ALERT CARDS ── */
+.alert-card { background:var(--panel); border:2px solid rgba(240,64,96,.4); border-left:6px solid var(--red); border-radius:var(--radius); padding:18px; margin-bottom:12px; }
+.alert-card.ack { border-color:rgba(34,201,122,.35); border-left-color:var(--green); }
+.alert-top { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-bottom:10px; }
+.alert-tool { font-size:18px; font-weight:800; }
+.ack-badge { font-size:13px; font-weight:800; padding:5px 12px; border-radius:20px; white-space:nowrap; flex-shrink:0; }
+.ack-pending { background:rgba(240,64,96,.15); color:var(--red);   border:2px solid rgba(240,64,96,.3); }
+.ack-done    { background:rgba(34,201,122,.12); color:var(--green); border:2px solid rgba(34,201,122,.25); }
+.alert-deficit { font-size:16px; font-weight:800; color:var(--red); margin-bottom:8px; }
+.alert-deficit.ack-col { color:var(--green); }
+.alert-meta { font-size:14px; color:var(--text2); line-height:1.9; font-weight:600; }
+.alert-meta strong { color:var(--text); }
+.ack-action-btn {
+  margin-top:12px; background:rgba(34,201,122,.12); color:var(--green);
+  border:2px solid rgba(34,201,122,.3); font-family:var(--font);
+  font-size:16px; font-weight:800; padding:12px 20px; border-radius:10px;
+  cursor:pointer; transition:all .2s; width:100%;
+}
+.ack-action-btn:hover { background:rgba(34,201,122,.22); }
+
+/* ── LOG ITEMS ── */
+.log-item { background:var(--panel); border:2px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:10px; }
+.log-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; gap:8px; }
+.log-tool { font-size:16px; font-weight:800; }
+.log-shift-badge { background:var(--bg3); color:var(--accent); font-size:13px; font-weight:800; padding:4px 10px; border-radius:8px; white-space:nowrap; }
+.log-detail { font-size:14px; color:var(--text2); font-weight:600; line-height:1.7; }
+.log-ts { font-size:13px; color:var(--text3); margin-top:4px; font-weight:600; }
+
+/* ── MANAGE CARDS ── */
+.manage-card { background:var(--panel); border:2px solid var(--border); border-radius:var(--radius); padding:18px; margin-bottom:12px; }
+.mc-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; gap:8px; flex-wrap:wrap; }
+.mc-name { font-size:18px; font-weight:800; }
+.mc-meta { font-size:15px; color:var(--text2); font-weight:600; margin-bottom:12px; }
+.mc-meta strong { color:var(--accent); font-size:17px; }
+.mc-meta .warn-val { color:var(--yellow); }
+.mc-actions { display:flex; gap:10px; }
+
+/* ── BUTTONS ── */
+.btn { font-family:var(--font); font-weight:800; font-size:15px; padding:10px 18px; border-radius:10px; border:none; cursor:pointer; transition:all .2s; display:inline-flex; align-items:center; gap:6px; }
+.btn-acc { background:var(--acc-dk); color:#fff; }
+.btn-acc:hover { background:var(--accent); box-shadow:var(--glow); }
+.btn-out { background:transparent; color:var(--text2); border:2px solid var(--border); }
+.btn-out:hover { border-color:var(--accent); color:var(--accent); }
+.btn-grn { background:rgba(34,201,122,.12); color:var(--green); border:2px solid rgba(34,201,122,.25); }
+.btn-grn:hover { background:rgba(34,201,122,.22); }
+.btn-red { background:rgba(240,64,96,.12); color:var(--red); border:2px solid rgba(240,64,96,.25); }
+.btn-red:hover { background:rgba(240,64,96,.22); }
+.btn-block { width:100%; justify-content:center; padding:16px; font-size:18px; margin-top:8px; border-radius:var(--radius); }
+
+/* ── USER BAR ── */
+.user-bar { background:var(--bg3); border:2px solid var(--border); border-radius:12px; padding:14px 18px; margin-bottom:20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+.ub-avatar { font-size:30px; }
+.ub-name { font-size:18px; font-weight:800; }
+.ub-detail { font-size:14px; color:var(--text2); font-weight:600; }
+
+/* ── MODAL ── */
+.overlay { position:fixed; inset:0; background:rgba(0,0,0,.78); backdrop-filter:blur(6px); z-index:200; display:none; align-items:center; justify-content:center; padding:20px; }
+.overlay.open { display:flex; }
+.modal { background:var(--panel); border:2px solid var(--border); border-radius:20px; padding:28px; width:100%; max-width:440px; animation:scaleIn .22s ease; box-shadow:0 24px 64px rgba(0,0,0,.6),var(--glow); }
+.modal-title { font-size:20px; font-weight:900; letter-spacing:1px; margin-bottom:20px; color:var(--accent); }
+.modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:22px; }
+.form-grp { margin-bottom:16px; }
+.form-label { display:block; font-size:16px; font-weight:800; color:var(--text2); margin-bottom:8px; }
+.form-inp, .form-sel { width:100%; background:var(--bg3); border:2px solid var(--border); color:var(--text); font-family:var(--font); font-size:17px; font-weight:700; padding:12px 16px; border-radius:10px; outline:none; transition:border-color .2s; }
+.form-inp:focus, .form-sel:focus { border-color:var(--accent); }
+.form-sel option { background:var(--panel); }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+/* ── PIN ── */
+.pin-dots { display:flex; justify-content:center; gap:16px; margin:18px 0 6px; }
+.pin-dot { width:16px; height:16px; border-radius:50%; border:2px solid var(--border); background:transparent; transition:all .15s; }
+.pin-dot.on { background:var(--accent); border-color:var(--accent); box-shadow:0 0 10px rgba(59,158,255,.5); }
+.pin-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; max-width:250px; margin:16px auto 0; }
+.pin-k { background:var(--bg3); border:2px solid var(--border); color:var(--text); font-family:var(--font); font-size:22px; font-weight:800; padding:16px; border-radius:12px; cursor:pointer; transition:all .12s; text-align:center; }
+.pin-k:hover, .pin-k:active { border-color:var(--accent); color:var(--accent); background:rgba(59,158,255,.1); }
+.pin-err { font-size:15px; color:var(--red); text-align:center; min-height:18px; font-weight:800; margin-top:8px; }
+
+/* ── TOAST ── */
+#toast { position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(8px); z-index:999; font-size:16px; font-weight:800; padding:14px 22px; border-radius:14px; opacity:0; transition:all .3s; white-space:nowrap; pointer-events:none; }
+#toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+#toast.ok  { background:rgba(34,201,122,.18); color:var(--green); border:2px solid rgba(34,201,122,.35); }
+#toast.err { background:rgba(240,64,96,.18);  color:var(--red);   border:2px solid rgba(240,64,96,.35); }
+
+/* ── LOADING / EMPTY ── */
+.spinner { display:inline-block; width:24px; height:24px; border:3px solid rgba(59,158,255,.2); border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite; }
+.loading-full { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:240px; gap:14px; color:var(--text2); font-size:16px; font-weight:700; }
+.empty { text-align:center; padding:60px 20px; color:var(--text3); }
+.empty-icon { font-size:48px; margin-bottom:12px; }
+.empty-txt { font-size:16px; font-weight:700; }
+
+@keyframes scaleIn { from{opacity:0;transform:scale(.92);}to{opacity:1;transform:scale(1);} }
+@keyframes spin { to{transform:rotate(360deg);} }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════
+     STEP 1 — CHOOSE ROLE
+══════════════════════════════ -->
+<div id="pgRole" class="page active">
+  <div class="onboard-wrap">
+    <div class="brand">
+      <span class="brand-icon">⚙️</span>
+      <div class="brand-name">MoldTool</div>
+      <div class="brand-sub">MOLD CLEANING TOOL TRACKER</div>
+    </div>
+    <div class="step-label">Step 1 of 3 &nbsp;·&nbsp; <span>Who are you?</span></div>
+    <div class="big-cards">
+      <div class="big-card c-op" onclick="selectRole('operator')">
+        <div class="big-card-icon">👷</div>
+        <div>
+          <div class="big-card-title">Operator</div>
+          <div class="big-card-desc">Update tool counts each shift</div>
+        </div>
+      </div>
+      <div class="big-card c-ad" onclick="showPinModal()">
+        <div class="big-card-icon">🔐</div>
+        <div>
+          <div class="big-card-title">Admin</div>
+          <div class="big-card-desc">Manage tools &amp; acknowledge alerts</div>
+        </div>
+      </div>
+      <div class="big-card c-mg" onclick="enterManagement()">
+        <div class="big-card-icon">📊</div>
+        <div>
+          <div class="big-card-title">Management</div>
+          <div class="big-card-desc">View live dashboard &amp; status only</div>
+        </div>
+      </div>
+      <div class="big-card c-vd" onclick="selectRole('vendor')">
+        <div class="big-card-icon">🔧</div>
+        <div>
+          <div class="big-card-title">Vendor</div>
+          <div class="big-card-desc">Log completed sharpening work today</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     STEP 2 — CHOOSE SHIFT
+══════════════════════════════ -->
+<div id="pgShift" class="page">
+  <div class="onboard-wrap">
+    <button class="back-btn" onclick="goBack('pgRole')">← Back</button>
+    <div class="step-label">Step 2 of 3 &nbsp;·&nbsp; <span>Select Your Shift</span></div>
+    <div class="shift-row">
+      <div class="shift-btn" onclick="selectShift('A')">
+        <div class="s-letter">A</div>
+        <div class="s-label">SHIFT A</div>
+      </div>
+      <div class="shift-btn" onclick="selectShift('B')">
+        <div class="s-letter">B</div>
+        <div class="s-label">SHIFT B</div>
+      </div>
+      <div class="shift-btn" onclick="selectShift('C')">
+        <div class="s-letter">C</div>
+        <div class="s-label">SHIFT C</div>
+      </div>
+      <div class="shift-btn" onclick="selectShift('D')">
+        <div class="s-letter">D</div>
+        <div class="s-label">SHIFT D</div>
+      </div>
+      <div class="shift-btn" onclick="selectShift('VENDOR')" style="grid-column:span 2;border-color:rgba(240,120,48,.4);">
+        <div class="s-letter" style="color:var(--orange);font-size:40px;">🔧</div>
+        <div class="s-label" style="color:var(--orange);">VENDOR</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     STEP 3 — NAME & ID
+══════════════════════════════ -->
+<div id="pgIdentity" class="page">
+  <div class="onboard-wrap">
+    <button class="back-btn" onclick="goBack('pgShift')">← Back</button>
+    <div class="step-label">Step 3 of 3 &nbsp;·&nbsp; <span>Enter Your Details</span></div>
+    <div class="id-block">
+      <div>
+        <label class="id-label" for="inpName">👤 &nbsp;Full Name</label>
+        <input class="id-inp" id="inpName" type="text" placeholder="e.g. Ahmad bin Ali" autocomplete="name"/>
+      </div>
+      <div>
+        <label class="id-label" for="inpEmpId">🪪 &nbsp;Employee ID</label>
+        <input class="id-inp" id="inpEmpId" type="text" placeholder="e.g. EMP-1234" autocomplete="off"/>
+      </div>
+    </div>
+    <button class="proceed-btn" onclick="proceedToApp()">Enter App &nbsp;→</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     VENDOR — Name & ID
+══════════════════════════════ -->
+<div id="pgVendorId" class="page">
+  <div class="onboard-wrap">
+    <button class="back-btn" onclick="goBack('pgShift')">← Back</button>
+    <div class="step-label">Step 2 of 2 &nbsp;·&nbsp; <span>Vendor Details</span></div>
+    <div style="text-align:center;font-size:48px;margin-bottom:-10px;">🔧</div>
+    <div class="id-block">
+      <div>
+        <label class="id-label" for="vndName">👤 &nbsp;Vendor / Company Name</label>
+        <input class="id-inp" id="vndName" type="text" placeholder="e.g. Ahmad Sharpening Co." autocomplete="name"/>
+      </div>
+      <div>
+        <label class="id-label" for="vndId">🪪 &nbsp;Vendor ID / Contact No.</label>
+        <input class="id-inp" id="vndId" type="text" placeholder="e.g. VND-001" autocomplete="off"/>
+      </div>
+    </div>
+    <button class="proceed-btn" style="background:linear-gradient(135deg,#b85e10,var(--orange));" onclick="proceedVendor()">Continue &nbsp;→</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     VENDOR — Entry Form
+══════════════════════════════ -->
+<div id="pgVendorForm" class="page">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="tb-logo">⚙️ MOLD</div>
+      <span class="badge badge-vd">VENDOR</span>
+    </div>
+    <div class="tb-right">
+      <button class="exit-btn" onclick="doExit()">🚪 Exit</button>
+    </div>
+  </div>
+  <div class="content">
+    <div class="user-bar" id="vndUserBar"></div>
+    <div class="sec-title">🔧 Sharpening Record</div>
+    <div class="sec-sub" id="vndDateSub"></div>
+
+    <!-- Date selector -->
+    <div style="background:var(--panel);border:2px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:16px;">
+      <label class="id-label" for="vndDate" style="font-size:16px;margin-bottom:8px;display:block;">📅 &nbsp;Date of Work</label>
+      <input class="id-inp" id="vndDate" type="date" style="font-size:18px;padding:14px 16px;"/>
+    </div>
+
+    <!-- Copper Rod -->
+    <div class="upd-card" style="border-left:6px solid var(--orange);">
+      <div class="upd-name">🟠 &nbsp;Copper Rod</div>
+      <div class="upd-std" style="margin-bottom:14px;">How many completed &amp; sharp today?</div>
+      <div class="qty-ctrl">
+        <button class="qty-btn" onclick="adjVnd('vndRod',-1)" style="border-color:rgba(240,120,48,.4);">−</button>
+        <input class="qty-inp" type="number" min="0" id="vndRod" value="0" style="border-color:rgba(240,120,48,.4);"/>
+        <button class="qty-btn" onclick="adjVnd('vndRod',1)" style="border-color:rgba(240,120,48,.4);">+</button>
+      </div>
+      <div style="font-size:14px;color:var(--text2);margin-top:10px;font-weight:700;">units sharpened</div>
+    </div>
+
+    <!-- Copper Plate -->
+    <div class="upd-card" style="border-left:6px solid var(--orange);">
+      <div class="upd-name">🟠 &nbsp;Copper Plate</div>
+      <div class="upd-std" style="margin-bottom:14px;">How many completed &amp; sharp today?</div>
+      <div class="qty-ctrl">
+        <button class="qty-btn" onclick="adjVnd('vndPlate',-1)" style="border-color:rgba(240,120,48,.4);">−</button>
+        <input class="qty-inp" type="number" min="0" id="vndPlate" value="0" style="border-color:rgba(240,120,48,.4);"/>
+        <button class="qty-btn" onclick="adjVnd('vndPlate',1)" style="border-color:rgba(240,120,48,.4);">+</button>
+      </div>
+      <div style="font-size:14px;color:var(--text2);margin-top:10px;font-weight:700;">units sharpened</div>
+    </div>
+
+    <!-- Notes (optional) -->
+    <div style="background:var(--panel);border:2px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:16px;">
+      <label class="id-label" for="vndNotes" style="font-size:16px;margin-bottom:8px;display:block;">📝 &nbsp;Notes (Optional)</label>
+      <textarea class="id-inp" id="vndNotes" rows="3" placeholder="Any remarks or issues..." style="resize:none;height:auto;font-size:16px;"></textarea>
+    </div>
+
+    <button class="proceed-btn" style="background:linear-gradient(135deg,#b85e10,var(--orange));max-width:100%;border-radius:var(--radius);font-size:19px;" onclick="submitVendor()">
+      💾 &nbsp;Submit Sharpening Record
+    </button>
+    <div style="height:30px;"></div>
+  </div>
+</div>
+<div id="pgApp" class="page">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="tb-logo">⚙️ MOLD</div>
+      <span class="badge" id="roleBadge"></span>
+      <span class="badge badge-shift" id="shiftBadge"></span>
+    </div>
+    <div class="tb-right">
+      <button class="exit-btn" onclick="doExit()">🚪 Exit</button>
+    </div>
+  </div>
+  <div class="content" id="mainContent"></div>
+  <nav class="bottom-nav" id="bottomNav"></nav>
+</div>
+
+<!-- ══════════════════════════════
+     MANAGEMENT (dashboard only)
+══════════════════════════════ -->
+<div id="pgMgmt" class="page">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="tb-logo">⚙️ MOLD</div>
+      <span class="badge badge-mg">MANAGEMENT</span>
+    </div>
+    <div class="tb-right">
+      <button class="btn btn-out" onclick="renderMgmtDashboard()" style="font-size:14px;padding:8px 14px;">🔄 Refresh</button>
+      <button class="exit-btn" onclick="doExit()">🚪 Exit</button>
+    </div>
+  </div>
+  <div class="content" id="mgmtContent"></div>
+</div>
+
+<!-- ══════════════════════════════
+     OVERLAYS
+══════════════════════════════ -->
+<!-- PIN -->
+<div class="overlay" id="ovPin">
+  <div class="modal">
+    <div class="modal-title">🔐 Admin PIN</div>
+    <div style="text-align:center">
+      <div style="font-size:16px;font-weight:700;color:var(--text2)">Enter your 4-digit PIN</div>
+      <div class="pin-dots">
+        <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
+        <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
+      </div>
+      <div class="pin-err" id="pinErr"></div>
+      <div class="pin-grid">
+        <div class="pin-k" onclick="pk('1')">1</div><div class="pin-k" onclick="pk('2')">2</div><div class="pin-k" onclick="pk('3')">3</div>
+        <div class="pin-k" onclick="pk('4')">4</div><div class="pin-k" onclick="pk('5')">5</div><div class="pin-k" onclick="pk('6')">6</div>
+        <div class="pin-k" onclick="pk('7')">7</div><div class="pin-k" onclick="pk('8')">8</div><div class="pin-k" onclick="pk('9')">9</div>
+        <div class="pin-k" onclick="pk('C')">C</div><div class="pin-k" onclick="pk('0')">0</div><div class="pin-k" onclick="pk('⌫')">⌫</div>
+      </div>
+    </div>
+    <div class="modal-actions"><button class="btn btn-out" onclick="closePin()">Cancel</button></div>
+  </div>
+</div>
+
+<!-- ADD/EDIT TOOL -->
+<div class="overlay" id="ovTool">
+  <div class="modal">
+    <div class="modal-title" id="toolModalTitle">➕ Add Tool</div>
+    <div class="form-grp"><label class="form-label">Tool Name</label><input class="form-inp" id="tmName" placeholder="e.g. Copper Rod"/></div>
+    <div class="form-grp"><label class="form-label">Category</label>
+      <select class="form-sel" id="tmCat">
+        <option value="copper">Copper</option>
+        <option value="metal">Metal</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-grp"><label class="form-label">Standard Qty</label><input class="form-inp" id="tmStd" type="number" min="1" value="40"/></div>
+      <div class="form-grp"><label class="form-label">Min Alert Qty</label><input class="form-inp" id="tmMin" type="number" min="0" value="30"/></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-out" onclick="closeTool()">Cancel</button>
+      <button class="btn btn-acc" id="tmSaveBtn" onclick="saveTool()">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ACKNOWLEDGE -->
+<div class="overlay" id="ovAck">
+  <div class="modal">
+    <div class="modal-title">✅ Acknowledge Alert</div>
+    <div id="ackDetail" style="font-size:15px;color:var(--text2);margin-bottom:18px;line-height:1.9;font-weight:600;"></div>
+    <div class="form-grp"><label class="form-label">Your Name / Employee ID</label><input class="form-inp" id="ackBy" placeholder="Enter your name or ID"/></div>
+    <div class="modal-actions">
+      <button class="btn btn-out" onclick="closeAck()">Cancel</button>
+      <button class="btn btn-grn" onclick="confirmAck()">✅ Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════
+// ▼▼▼ PASTE YOUR APPS SCRIPT URL BELOW ▼▼▼
+const API_URL   = 'https://script.google.com/macros/s/AKfycbxxpu8YrZgKBp5FV5Adz-OBSmROVHSN0BlkJK28Nh4OiZFSVVcH3XTd8BeUoUpD-zjvrg/exec';
+const ADMIN_PIN = '1234'; // change this to your desired PIN
+// ▲▲▲ PASTE YOUR APPS SCRIPT URL ABOVE ▲▲▲
+// ══════════════════════════════════════════
+
+// STATE
+let role='', currentShift='', userName='', userEmpId='';
+let currentTab='dashboard';
+let tools=[], alerts=[], logs=[];
+let editingToolId=null, ackAlertId=null, pinBuf='';
+let pendingQty={};
+
+// ── API ──
+async function api(action, data=null) {
+  // All requests use GET to avoid Google Apps Script CORS issues
+  let url = API_URL + '?action=' + encodeURIComponent(action);
+  if (data) url += '&payload=' + encodeURIComponent(JSON.stringify(data));
+  const r = await fetch(url);
+  const result = await r.json();
+  if (result.error) throw new Error(result.error);
+  return result;
+}
+async function loadTools()  { const r=await api('getTools');  tools=r.tools||[]; }
+async function loadAlerts() { const r=await api('getAlerts'); alerts=r.alerts||[]; }
+async function loadLogs()   { const r=await api('getLogs');   logs=r.logs||[]; }
+
+// ── PAGE FLOW ──
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function goBack(target) { showPage(target); }
+
+// Step 1 — role
+function selectRole(r) {
+  role=r;
+  if(r==='vendor') {
+    document.getElementById('vndName').value = localStorage.getItem('vndName')||'';
+    document.getElementById('vndId').value   = localStorage.getItem('vndId')||'';
+    showPage('pgVendorId');
+  } else {
+    showPage('pgShift');
+  }
+}
+function enterManagement() {
+  role='management';
+  showPage('pgMgmt');
+  renderMgmtDashboard();
+}
+
+// Step 2 — shift (operator/admin) or vendor redirect
+function selectShift(s) {
+  currentShift=s;
+  if(s==='VENDOR') {
+    role='vendor';
+    document.getElementById('vndName').value = localStorage.getItem('vndName')||'';
+    document.getElementById('vndId').value   = localStorage.getItem('vndId')||'';
+    showPage('pgVendorId');
+  } else {
+    document.getElementById('inpName').value  = localStorage.getItem('opName')  || '';
+    document.getElementById('inpEmpId').value = localStorage.getItem('opEmpId') || '';
+    showPage('pgIdentity');
+  }
+}
+
+// Vendor identity proceed
+function proceedVendor() {
+  const name  = document.getElementById('vndName').value.trim();
+  const empId = document.getElementById('vndId').value.trim();
+  if(!name)  { toast('Please enter your name or company','err'); return; }
+  if(!empId) { toast('Please enter your Vendor ID','err'); return; }
+  userName=name; userEmpId=empId;
+  localStorage.setItem('vndName',name);
+  localStorage.setItem('vndId',empId);
+  // Set up vendor form
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('vndDate').value=today;
+  document.getElementById('vndRod').value=0;
+  document.getElementById('vndPlate').value=0;
+  document.getElementById('vndNotes').value='';
+  document.getElementById('vndUserBar').innerHTML=`
+    <div class="ub-avatar">🔧</div>
+    <div>
+      <div class="ub-name">${name}</div>
+      <div class="ub-detail">${empId} &nbsp;·&nbsp; Vendor</div>
+    </div>`;
+  document.getElementById('vndDateSub').textContent=
+    new Date().toLocaleDateString('en-MY',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  showPage('pgVendorForm');
+}
+
+function adjVnd(id, delta) {
+  const inp=document.getElementById(id);
+  inp.value=Math.max(0,(parseInt(inp.value)||0)+delta);
+}
+
+async function submitVendor() {
+  const date   = document.getElementById('vndDate').value;
+  const rod    = parseInt(document.getElementById('vndRod').value)||0;
+  const plate  = parseInt(document.getElementById('vndPlate').value)||0;
+  const notes  = document.getElementById('vndNotes').value.trim();
+  if(!date) { toast('Please select a date','err'); return; }
+  if(rod===0 && plate===0) { toast('Please enter at least one qty','err'); return; }
+  const btn=document.querySelector('[onclick="submitVendor()"]');
+  if(btn){btn.disabled=true;btn.textContent='Saving...';}
+  try {
+    await api('saveVendorLog',{
+      vendorName: userName, vendorID: userEmpId,
+      date, copperRod: rod, copperPlate: plate, notes
+    });
+    toast('✓ Sharpening record saved!','ok');
+    setTimeout(()=>doExit(),1500);
+  } catch(e) {
+    toast('Error: '+e.message,'err');
+    if(btn){btn.disabled=false;btn.textContent='💾  Submit Sharpening Record';}
+  }
+}
+
+// Step 3 — identity
+function proceedToApp() {
+  const name  = document.getElementById('inpName').value.trim();
+  const empId = document.getElementById('inpEmpId').value.trim();
+  if (!name)  { toast('Please enter your full name','err'); return; }
+  if (!empId) { toast('Please enter your Employee ID','err'); return; }
+  userName=name; userEmpId=empId;
+  localStorage.setItem('opName',name);
+  localStorage.setItem('opEmpId',empId);
+  launchApp();
+}
+
+function launchApp() {
+  document.getElementById('roleBadge').textContent = role.toUpperCase();
+  document.getElementById('roleBadge').className   = 'badge badge-'+(role==='admin'?'ad':'op');
+  document.getElementById('shiftBadge').textContent= 'SHIFT '+currentShift;
+  buildNav();
+  showPage('pgApp');
+  showTab('dashboard');
+}
+
+function doExit() {
+  role=''; currentShift=''; userName=''; userEmpId=''; pendingQty={};
+  showPage('pgRole');
+}
+
+// ── NAV ──
+function buildNav() {
+  const tabs = role==='admin'
+    ? [['dashboard','📊','Dashboard'],['update','✏️','Update'],['alerts','🚨','Alerts'],['logs','📋','Logs'],['manage','🛠','Tools']]
+    : [['dashboard','📊','Dashboard'],['update','✏️','Update'],['alerts','🚨','Alerts']];
+  document.getElementById('bottomNav').innerHTML = tabs.map(([id,ic,lb])=>
+    `<div class="bnav-item" id="bn-${id}" onclick="showTab('${id}')"><span class="ni">${ic}</span>${lb}</div>`
+  ).join('');
+}
+
+function showTab(tab) {
+  currentTab=tab;
+  document.querySelectorAll('.bnav-item').forEach(b=>b.classList.remove('active'));
+  const bn=document.getElementById('bn-'+tab);
+  if(bn) bn.classList.add('active');
+  renderTab(tab);
+}
+
+// ── RENDER ──
+async function renderTab(tab) {
+  const c=document.getElementById('mainContent');
+  c.innerHTML=`<div class="loading-full"><div class="spinner"></div><div>Loading...</div></div>`;
+  try {
+    if (tab==='dashboard') await renderDashboard(c);
+    else if (tab==='update')  await renderUpdate(c);
+    else if (tab==='alerts')  await renderAlerts(c);
+    else if (tab==='logs')    await renderLogs(c);
+    else if (tab==='manage')  await renderManage(c);
+  } catch(e) {
+    c.innerHTML=`<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-txt" style="color:var(--red)">${e.message}</div></div>`;
+  }
+}
+
+// ── HELPERS ──
+const catLabels={copper:'COPPER',metal:'METAL',other:'OTHER'};
+const pillClass={ok:'pill-ok',warn:'pill-warn',low:'pill-low'};
+const pillText={ok:'OK',warn:'REDUCED',low:'LOW ⚠'};
+
+function getStatus(qty,minQty,stdQty) {
+  if(qty<=minQty) return 'low';
+  if(qty<stdQty)  return 'warn';
+  return 'ok';
+}
+
+function userBar() {
+  const isVendor = role==='vendor' || currentShift==='VENDOR';
+  const shiftLabel = isVendor ? 'Vendor' : 'Shift '+currentShift;
+  return `<div class="user-bar">
+    <div class="ub-avatar">${isVendor?'🔧':'👤'}</div>
+    <div>
+      <div class="ub-name">${userName}</div>
+      <div class="ub-detail">${userEmpId} &nbsp;·&nbsp; ${shiftLabel}</div>
+    </div>
+  </div>`;
+}
+
+function buildLatestQty() {
+  const q={};
+  tools.forEach(t=>q[t.id]=t.standardQty);
+  const seen=new Set();
+  logs.filter(l=>l.shift===currentShift).forEach(l=>{if(!seen.has(l.toolId)){q[l.toolId]=Number(l.qty);seen.add(l.toolId);}});
+  return q;
+}
+
+// ── DASHBOARD ──
+async function renderDashboard(c) {
+  await loadTools(); await loadLogs(); await loadAlerts();
+  const lq=buildLatestQty();
+  const lowN  =tools.filter(t=>getStatus(lq[t.id],t.minQty,t.standardQty)==='low').length;
+  const warnN =tools.filter(t=>getStatus(lq[t.id],t.minQty,t.standardQty)==='warn').length;
+  const pendN =alerts.filter(a=>a.status==='PENDING').length;
+  const dateStr=new Date().toLocaleDateString('en-MY',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+  c.innerHTML=`
+    ${userBar()}
+    <div class="sec-title">📊 Dashboard</div>
+    <div class="sec-sub">${dateStr}</div>
+    <div class="stats-row">
+      <div class="stat-c bl"><div class="stat-l">Total Tools</div><div class="stat-v">${tools.length}</div><div class="stat-m">types tracked</div></div>
+      <div class="stat-c re"><div class="stat-l">Low Stock</div><div class="stat-v">${lowN}</div><div class="stat-m">below minimum</div></div>
+      <div class="stat-c ye"><div class="stat-l">Reduced</div><div class="stat-v">${warnN}</div><div class="stat-m">below standard</div></div>
+      <div class="stat-c gr"><div class="stat-l">Pending Alerts</div><div class="stat-v">${pendN}</div><div class="stat-m">need attention</div></div>
+    </div>
+    ${tools.map(t=>{
+      const qty=lq[t.id]!==undefined?lq[t.id]:t.standardQty;
+      const st=getStatus(qty,t.minQty,t.standardQty);
+      const pct=Math.min(100,Math.round((qty/t.standardQty)*100));
+      return `<div class="tool-card ${st}">
+        <div class="tc-top">
+          <div class="tc-name">${t.name}</div>
+          <span class="tc-cat cat-${t.category}">${catLabels[t.category]}</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+          <div class="tc-nums">
+            <div class="tc-num-item"><div class="tc-num-label">CURRENT</div><div class="tc-num-val cur">${qty}</div></div>
+            <div class="tc-sep">/</div>
+            <div class="tc-num-item"><div class="tc-num-label">STANDARD</div><div class="tc-num-val std">${t.standardQty}</div></div>
+          </div>
+          <span class="status-pill ${pillClass[st]}">${pillText[st]}</span>
+        </div>
+        <div class="tc-bar"><div class="tc-fill ${st}" style="width:${pct}%"></div></div>
+      </div>`;
+    }).join('')||'<div class="empty"><div class="empty-icon">📦</div><div class="empty-txt">No tools added yet</div></div>'}`;
+}
+
+// ── MANAGEMENT DASHBOARD ──
+async function renderMgmtDashboard() {
+  const c=document.getElementById('mgmtContent');
+  c.innerHTML=`<div class="loading-full"><div class="spinner"></div><div>Loading...</div></div>`;
+  try {
+    await loadTools(); await loadLogs(); await loadAlerts();
+    let vendorLogs=[];
+    try { const r=await api('getVendorLogs'); vendorLogs=r.logs||[]; } catch(e){}
+    const dateStr=new Date().toLocaleDateString('en-MY',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    const pendN=alerts.filter(a=>a.status==='PENDING').length;
+    const ackN =alerts.filter(a=>a.status==='ACKNOWLEDGED').length;
+
+    const shiftCards=['A','B','C','D'].map(s=>{
+      const seen=new Set(); const qm={};
+      logs.filter(l=>l.shift===s).forEach(l=>{if(!seen.has(l.toolId)){qm[l.toolId]=Number(l.qty);seen.add(l.toolId);}});
+      const hasData=Object.keys(qm).length>0;
+      const lowC =tools.filter(t=>getStatus(qm[t.id]??t.standardQty,t.minQty,t.standardQty)==='low').length;
+      const warnC=tools.filter(t=>getStatus(qm[t.id]??t.standardQty,t.minQty,t.standardQty)==='warn').length;
+      const st=lowC>0?'low':warnC>0?'warn':'ok';
+      return `<div class="tool-card ${hasData?st:'ok'}" style="${hasData?'':'border-left-color:var(--border)'}">
+        <div class="tc-top">
+          <div class="tc-name" style="font-size:22px">Shift <span style="color:var(--accent)">${s}</span></div>
+          ${hasData
+            ? `<span class="status-pill ${pillClass[st]}">${pillText[st]}</span>`
+            : `<span class="status-pill" style="background:var(--bg3);color:var(--text3);border:2px solid var(--border)">NO DATA</span>`}
+        </div>
+        ${hasData
+          ? `<div style="font-size:15px;color:var(--text2);font-weight:700;">
+              Low: <strong style="color:${lowC>0?'var(--red)':'var(--green)'}">${lowC}</strong> &nbsp;·&nbsp;
+              Reduced: <strong style="color:${warnC>0?'var(--yellow)':'var(--green)'}">${warnC}</strong>
+            </div>`
+          : `<div style="font-size:14px;color:var(--text3);font-weight:700;">No submission yet this shift</div>`}
+      </div>`;
+    }).join('');
+
+    // All tools latest qty (any shift, most recent)
+    const seen=new Set(); const allLQ={};
+    tools.forEach(t=>allLQ[t.id]=t.standardQty);
+    logs.forEach(l=>{if(!seen.has(l.toolId)){allLQ[l.toolId]=Number(l.qty);seen.add(l.toolId);}});
+
+    const lowTotal=tools.filter(t=>getStatus(allLQ[t.id],t.minQty,t.standardQty)==='low').length;
+
+    c.innerHTML=`
+      <div class="sec-title">📊 Live Dashboard</div>
+      <div class="sec-sub">${dateStr}</div>
+      <div class="stats-row">
+        <div class="stat-c bl"><div class="stat-l">Tools</div><div class="stat-v">${tools.length}</div><div class="stat-m">types</div></div>
+        <div class="stat-c re"><div class="stat-l">Pending Alerts</div><div class="stat-v">${pendN}</div><div class="stat-m">need action</div></div>
+        <div class="stat-c gr"><div class="stat-l">Acknowledged</div><div class="stat-v">${ackN}</div><div class="stat-m">resolved</div></div>
+        <div class="stat-c ye"><div class="stat-l">Low Stock</div><div class="stat-v">${lowTotal}</div><div class="stat-m">tool types</div></div>
+      </div>
+      <div style="font-size:18px;font-weight:900;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">Shift Summary</div>
+      ${shiftCards}
+      <div style="font-size:18px;font-weight:900;letter-spacing:2px;text-transform:uppercase;margin:20px 0 12px;">All Tools (Latest)</div>
+      ${tools.map(t=>{
+        const qty=allLQ[t.id]!==undefined?allLQ[t.id]:t.standardQty;
+        const st=getStatus(qty,t.minQty,t.standardQty);
+        const pct=Math.min(100,Math.round((qty/t.standardQty)*100));
+        return `<div class="tool-card ${st}">
+          <div class="tc-top"><div class="tc-name">${t.name}</div><span class="tc-cat cat-${t.category}">${catLabels[t.category]}</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+            <div class="tc-nums">
+              <div class="tc-num-item"><div class="tc-num-label">LATEST</div><div class="tc-num-val cur">${qty}</div></div>
+              <div class="tc-sep">/</div>
+              <div class="tc-num-item"><div class="tc-num-label">STANDARD</div><div class="tc-num-val std">${t.standardQty}</div></div>
+            </div>
+            <span class="status-pill ${pillClass[st]}">${pillText[st]}</span>
+          </div>
+          <div class="tc-bar"><div class="tc-fill ${st}" style="width:${pct}%"></div></div>
+        </div>`;
+      }).join('')}
+      <div style="height:30px;"></div>
+      ${vendorLogs.length>0?`
+      <div style="font-size:18px;font-weight:900;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;color:var(--orange);">🔧 Vendor Sharpening (Recent)</div>
+      ${vendorLogs.slice(0,5).map(v=>{
+        const ts=new Date(v.timestamp).toLocaleString('en-MY');
+        return `<div class="tool-card ok" style="border-left-color:var(--orange);">
+          <div class="tc-top">
+            <div class="tc-name" style="font-size:16px;">${v.vendorName}</div>
+            <span class="tc-cat cat-copper">VENDOR</span>
+          </div>
+          <div style="display:flex;gap:24px;margin-bottom:6px;">
+            <div class="tc-num-item"><div class="tc-num-label">COPPER ROD</div><div class="tc-num-val" style="color:var(--orange);font-size:24px;">${v.copperRod}</div></div>
+            <div class="tc-num-item"><div class="tc-num-label">COPPER PLATE</div><div class="tc-num-val" style="color:var(--orange);font-size:24px;">${v.copperPlate}</div></div>
+          </div>
+          <div style="font-size:13px;color:var(--text2);font-weight:600;">Date: ${v.date} &nbsp;·&nbsp; ID: ${v.vendorID}</div>
+          ${v.notes?`<div style="font-size:13px;color:var(--text3);margin-top:4px;">📝 ${v.notes}</div>`:''}
+          <div style="font-size:12px;color:var(--text3);margin-top:4px;">Submitted: ${ts}</div>
+        </div>`;
+      }).join('')}`:''}
+      <div style="height:30px;"></div>`;
+  } catch(e) {
+    c.innerHTML=`<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-txt" style="color:var(--red)">${e.message}</div></div>`;
+  }
+}
+
+// ── UPDATE ──
+async function renderUpdate(c) {
+  await loadTools();
+  tools.forEach(t=>{if(pendingQty[t.id]===undefined)pendingQty[t.id]=t.standardQty;});
+  c.innerHTML=`
+    ${userBar()}
+    <div class="sec-title">✏️ Update Qty</div>
+    <div class="sec-sub">Actual counts for Shift ${currentShift}</div>
+    ${tools.map(t=>{
+      const qty=pendingQty[t.id]!==undefined?pendingQty[t.id]:t.standardQty;
+      const d=t.standardQty-qty;
+      return `<div class="upd-card">
+        <div class="upd-name">${t.name}</div>
+        <div class="upd-std">Standard: <span>${t.standardQty}</span> units</div>
+        <div class="qty-ctrl">
+          <button class="qty-btn" onclick="adjQty('${t.id}',-1,${t.standardQty})">−</button>
+          <input class="qty-inp" type="number" min="0" id="qi-${t.id}" value="${qty}" oninput="onQtyInput('${t.id}',${t.standardQty})"/>
+          <button class="qty-btn" onclick="adjQty('${t.id}',1,${t.standardQty})">+</button>
+        </div>
+        <div class="qty-deficit ${d>0?'show':''}" id="def-${t.id}">⚠ ${d} unit(s) missing vs standard</div>
+      </div>`;
+    }).join('')}
+    <button class="btn btn-acc btn-block" onclick="submitUpdate()">💾 &nbsp;Save Shift ${currentShift} Update</button>
+    <div style="height:16px;"></div>`;
+}
+
+function adjQty(id,delta,std) {
+  const inp=document.getElementById('qi-'+id);
+  inp.value=Math.max(0,(parseInt(inp.value)||0)+delta);
+  onQtyInput(id,std);
+}
+function onQtyInput(id,std) {
+  const v=parseInt(document.getElementById('qi-'+id).value)||0;
+  pendingQty[id]=v;
+  const d=std-v;
+  const el=document.getElementById('def-'+id);
+  el.textContent=`⚠ ${d} unit(s) missing vs standard`;
+  el.classList.toggle('show',d>0);
+}
+async function submitUpdate() {
+  const entries=tools.map(t=>({toolId:t.id,toolName:t.name,qty:parseInt(document.getElementById('qi-'+t.id).value)||0,standardQty:t.standardQty}));
+  const btn=document.querySelector('[onclick="submitUpdate()"]');
+  if(btn){btn.disabled=true;btn.textContent='Saving...';}
+  try {
+    await api('saveLog',{shift:currentShift,employeeName:userName,employeeID:userEmpId,entries});
+    toast('✓ Shift '+currentShift+' saved!','ok');
+    pendingQty={};
+    setTimeout(()=>showTab('dashboard'),1200);
+  } catch(e) {
+    toast('Error: '+e.message,'err');
+    if(btn){btn.disabled=false;btn.textContent='💾  Save Shift '+currentShift+' Update';}
+  }
+}
+
+// ── ALERTS ──
+async function renderAlerts(c) {
+  await loadAlerts();
+  const pending=alerts.filter(a=>a.status==='PENDING');
+  const acked  =alerts.filter(a=>a.status==='ACKNOWLEDGED');
+  const card=(a)=>{
+    const isAck=a.status==='ACKNOWLEDGED';
+    const ts=new Date(a.timestamp).toLocaleString('en-MY');
+    return `<div class="alert-card ${isAck?'ack':''}">
+      <div class="alert-top">
+        <div class="alert-tool">${a.toolName}</div>
+        <span class="ack-badge ${isAck?'ack-done':'ack-pending'}">${isAck?'✅ ACKNOWLEDGED':'🔴 PENDING'}</span>
+      </div>
+      <div class="alert-deficit ${isAck?'ack-col':''}">Missing: ${a.deficit} unit(s) &nbsp;·&nbsp; Actual: ${a.qty} / ${a.standardQty}</div>
+      <div class="alert-meta">
+        Shift <strong>${a.shift}</strong> &nbsp;·&nbsp; <strong>${a.employeeName}</strong> (${a.employeeID})<br>
+        Reported: ${ts}
+        ${isAck?`<br>✅ Acknowledged by: <strong>${a.acknowledgedBy}</strong><br>${new Date(a.acknowledgedAt).toLocaleString('en-MY')}`:''}
+      </div>
+      ${role==='admin'&&!isAck?`<button class="ack-action-btn" onclick="openAck('${a.alertId}','${a.toolName}',${a.deficit},'${a.shift}')">✅ &nbsp;Acknowledge This Alert</button>`:''}
+    </div>`;
+  };
+  c.innerHTML=`
+    ${userBar()}
+    <div class="sec-title">🚨 Alerts</div>
+    <div class="sec-sub">Tool quantity reductions &amp; acknowledgements</div>
+    ${pending.length===0&&acked.length===0?'<div class="empty"><div class="empty-icon">✅</div><div class="empty-txt">All good — no alerts!</div></div>':''}
+    ${pending.length>0?`<div style="font-size:15px;font-weight:800;color:var(--red);letter-spacing:1px;margin-bottom:10px;">🔴 PENDING (${pending.length})</div>${pending.map(card).join('')}`:''}
+    ${acked.length>0?`<div style="font-size:15px;font-weight:800;color:var(--green);letter-spacing:1px;margin:20px 0 10px;">✅ ACKNOWLEDGED (${acked.length})</div>${acked.map(card).join('')}`:''}`;
+}
+
+// ── LOGS ──
+async function renderLogs(c) {
+  await loadLogs();
+  // also load vendor logs
+  let vendorLogs=[];
+  try { const r=await api('getVendorLogs'); vendorLogs=r.logs||[]; } catch(e){}
+
+  c.innerHTML=`
+    ${userBar()}
+    <div class="sec-title">📋 Shift Logs</div>
+    <div class="sec-sub">All recorded updates</div>
+    ${logs.length===0&&vendorLogs.length===0?'<div class="empty"><div class="empty-icon">📋</div><div class="empty-txt">No logs yet</div></div>':''}
+    ${logs.map(l=>{
+      const deficit=Number(l.deficit);
+      const ts=new Date(l.timestamp).toLocaleString('en-MY');
+      return `<div class="log-item">
+        <div class="log-top">
+          <div class="log-tool">${l.toolName}</div>
+          <span class="log-shift-badge">SHIFT ${l.shift}</span>
+        </div>
+        <div class="log-detail">
+          Qty: <strong style="color:${deficit>0?'var(--red)':'var(--green)'}">${l.qty}</strong> / ${l.standardQty}
+          ${deficit>0?`&nbsp;·&nbsp;<span style="color:var(--red)">−${deficit} missing</span>`:''}
+          &nbsp;·&nbsp; ${l.employeeName} (${l.employeeID})
+        </div>
+        <div class="log-ts">${ts}</div>
+      </div>`;
+    }).join('')}
+    ${vendorLogs.length>0?`
+      <div style="font-size:15px;font-weight:800;color:var(--orange);letter-spacing:1px;margin:20px 0 10px;">🔧 VENDOR SHARPENING RECORDS (${vendorLogs.length})</div>
+      ${vendorLogs.map(v=>{
+        const ts=new Date(v.timestamp).toLocaleString('en-MY');
+        return `<div class="log-item" style="border-left:4px solid var(--orange);">
+          <div class="log-top">
+            <div class="log-tool">🔧 Sharpening Record</div>
+            <span class="log-shift-badge" style="color:var(--orange);">VENDOR</span>
+          </div>
+          <div class="log-detail">
+            Copper Rod: <strong style="color:var(--orange)">${v.copperRod}</strong> &nbsp;·&nbsp;
+            Copper Plate: <strong style="color:var(--orange)">${v.copperPlate}</strong><br>
+            Date: <strong>${v.date}</strong> &nbsp;·&nbsp; ${v.vendorName} (${v.vendorID})
+            ${v.notes?`<br>Notes: ${v.notes}`:''}
+          </div>
+          <div class="log-ts">${ts}</div>
+        </div>`;
+      }).join('')}`:''}`;
+}
+
+// ── MANAGE ──
+async function renderManage(c) {
+  await loadTools();
+  c.innerHTML=`
+    ${userBar()}
+    <div class="sec-title">🛠 Manage Tools</div>
+    <div class="sec-sub">Add, edit, or remove tools</div>
+    <button class="btn btn-acc" onclick="openAddTool()" style="margin-bottom:18px;font-size:17px;padding:13px 24px;">➕ &nbsp;Add New Tool</button>
+    ${tools.map(t=>`
+      <div class="manage-card">
+        <div class="mc-top">
+          <div class="mc-name">${t.name}</div>
+          <span class="tc-cat cat-${t.category}">${catLabels[t.category]}</span>
+        </div>
+        <div class="mc-meta">Standard: <strong>${t.standardQty}</strong> &nbsp;·&nbsp; Min Alert: <strong class="warn-val">${t.minQty}</strong></div>
+        <div class="mc-actions">
+          <button class="btn btn-grn" onclick="openEditTool('${t.id}')">✏️ Edit</button>
+          <button class="btn btn-red" onclick="deleteTool('${t.id}','${t.name}')">🗑 Delete</button>
+        </div>
+      </div>`).join('')}`;
+}
+
+// ── TOOL MODAL ──
+function openAddTool() {
+  editingToolId=null;
+  document.getElementById('toolModalTitle').textContent='➕ Add Tool';
+  ['tmName','tmCat','tmStd','tmMin'].forEach(id=>document.getElementById(id).value=id==='tmCat'?'copper':id==='tmStd'?'40':id==='tmMin'?'30':'');
+  document.getElementById('ovTool').classList.add('open');
+}
+function openEditTool(id) {
+  editingToolId=id;
+  const t=tools.find(x=>x.id===id); if(!t)return;
+  document.getElementById('toolModalTitle').textContent='✏️ Edit Tool';
+  document.getElementById('tmName').value=t.name;
+  document.getElementById('tmCat').value=t.category;
+  document.getElementById('tmStd').value=t.standardQty;
+  document.getElementById('tmMin').value=t.minQty;
+  document.getElementById('ovTool').classList.add('open');
+}
+function closeTool(){document.getElementById('ovTool').classList.remove('open');}
+async function saveTool(){
+  const name=document.getElementById('tmName').value.trim();
+  const cat=document.getElementById('tmCat').value;
+  const std=parseInt(document.getElementById('tmStd').value)||1;
+  const min=parseInt(document.getElementById('tmMin').value)||0;
+  if(!name){toast('Please enter tool name','err');return;}
+  const btn=document.getElementById('tmSaveBtn');
+  btn.disabled=true;btn.textContent='Saving...';
+  try {
+    if(editingToolId){
+      await api('updateTool',{id:editingToolId,name,category:cat,standardQty:std,minQty:min});
+      toast('✓ Tool updated!','ok');
+    } else {
+      await api('addTool',{name,category:cat,standardQty:std,minQty:min});
+      toast('✓ Tool added!','ok');
+    }
+    btn.disabled=false;btn.textContent='💾 Save';
+    closeTool();
+    renderTab('manage');
+  } catch(e) {
+    toast('Save failed: '+e.message,'err');
+    btn.disabled=false;btn.textContent='💾 Save';
+  }
+}
+async function deleteTool(id,name){
+  if(!confirm(`Delete "${name}"? This cannot be undone.`))return;
+  await api('deleteTool',{id});
+  toast('🗑 Tool removed','ok');
+  renderTab('manage');
+}
+
+// ── ACK ──
+function openAck(alertId,toolName,deficit,shift){
+  ackAlertId=alertId;
+  document.getElementById('ackDetail').innerHTML=`Tool: <strong style="color:var(--text)">${toolName}</strong><br>Shift: <strong>${shift}</strong><br>Missing: <strong style="color:var(--red)">${deficit} unit(s)</strong>`;
+  document.getElementById('ackBy').value='';
+  document.getElementById('ovAck').classList.add('open');
+}
+function closeAck(){document.getElementById('ovAck').classList.remove('open');}
+async function confirmAck(){
+  const by=document.getElementById('ackBy').value.trim();
+  if(!by){toast('Please enter your name or ID','err');return;}
+  await api('acknowledgeAlert',{alertId:ackAlertId,acknowledgedBy:by});
+  toast('✅ Alert acknowledged','ok');
+  closeAck();
+  renderTab('alerts');
+}
+
+// ── PIN ──
+function showPinModal(){
+  pinBuf='';updateDots();
+  document.getElementById('pinErr').textContent='';
+  document.getElementById('ovPin').classList.add('open');
+}
+function closePin(){document.getElementById('ovPin').classList.remove('open');}
+function pk(v){
+  if(v==='C') pinBuf='';
+  else if(v==='⌫') pinBuf=pinBuf.slice(0,-1);
+  else if(pinBuf.length<4) pinBuf+=v;
+  updateDots();
+  if(pinBuf.length===4) checkPin();
+}
+function updateDots(){
+  for(let i=0;i<4;i++) document.getElementById('pd'+i).classList.toggle('on',i<pinBuf.length);
+}
+function checkPin(){
+  if(pinBuf===ADMIN_PIN){closePin();selectRole('admin');}
+  else{
+    document.getElementById('pinErr').textContent='✗ Incorrect PIN. Try again.';
+    pinBuf='';updateDots();
+    setTimeout(()=>document.getElementById('pinErr').textContent='',2500);
+  }
+}
+
+// ── TOAST ──
+function toast(msg,type='ok'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='show '+type;
+  setTimeout(()=>t.className='',3000);
+}
+</script>
+</body>
+</html>
