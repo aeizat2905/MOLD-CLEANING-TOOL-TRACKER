@@ -224,6 +224,18 @@ body::before {
 .upd-name { font-size:19px; font-weight:800; margin-bottom:4px; }
 .upd-std  { font-size:15px; color:var(--text2); font-weight:700; margin-bottom:14px; }
 .upd-std span { color:var(--accent); font-size:17px; font-weight:900; }
+/* Previous shift info banner */
+.prev-shift-info {
+  background: rgba(59,158,255,0.08);
+  border: 1px solid rgba(59,158,255,0.2);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--text2);
+  font-weight: 700;
+}
+.prev-shift-info strong { color: var(--accent); }
 .qty-ctrl { display:flex; align-items:center; gap:12px; }
 .qty-btn {
   background:var(--bg3); border:2px solid var(--border); color:var(--text);
@@ -628,7 +640,6 @@ let pendingQty={};
 
 // ── API ──
 async function api(action, data=null) {
-  // All requests use GET to avoid Google Apps Script CORS issues
   let url = API_URL + '?action=' + encodeURIComponent(action);
   if (data) url += '&payload=' + encodeURIComponent(JSON.stringify(data));
   const r = await fetch(url);
@@ -689,7 +700,6 @@ function proceedVendor() {
   userName=name; userEmpId=empId;
   localStorage.setItem('vndName',name);
   localStorage.setItem('vndId',empId);
-  // Set up vendor form
   const today=new Date().toISOString().split('T')[0];
   document.getElementById('vndDate').value=today;
   document.getElementById('vndRod').value=0;
@@ -815,18 +825,47 @@ function userBar() {
   </div>`;
 }
 
-function buildLatestQty() {
+/**
+ * FIX: Build latest qty from ALL shifts (not just current shift).
+ * This ensures next shift sees the actual last-recorded quantity,
+ * not the standard/max quantity.
+ * Returns: { toolId: latestQty, ... }
+ */
+function buildGlobalLatestQty() {
+  const q={};
+  // Default to standardQty for any tool with no log entry yet
+  tools.forEach(t => q[t.id] = t.standardQty);
+  // Walk logs in order (oldest first assumed), overwrite with each newer entry
+  // so the final value is the most recent logged qty across ALL shifts
+  const seen = new Set();
+  // logs are returned newest-first from server typically; use a reverse pass
+  // to get the most recent entry per tool regardless of shift
+  [...logs].forEach(l => {
+    if (!seen.has(l.toolId)) {
+      q[l.toolId] = Number(l.qty);
+      seen.add(l.toolId);
+    }
+  });
+  return q;
+}
+
+/**
+ * Build latest qty filtered to the CURRENT shift only (used for dashboard context).
+ */
+function buildShiftLatestQty() {
   const q={};
   tools.forEach(t=>q[t.id]=t.standardQty);
   const seen=new Set();
-  logs.filter(l=>l.shift===currentShift).forEach(l=>{if(!seen.has(l.toolId)){q[l.toolId]=Number(l.qty);seen.add(l.toolId);}});
+  logs.filter(l=>l.shift===currentShift).forEach(l=>{
+    if(!seen.has(l.toolId)){q[l.toolId]=Number(l.qty);seen.add(l.toolId);}
+  });
   return q;
 }
 
 // ── DASHBOARD ──
 async function renderDashboard(c) {
   await loadTools(); await loadLogs(); await loadAlerts();
-  const lq=buildLatestQty();
+  const lq = buildShiftLatestQty();
   const lowN  =tools.filter(t=>getStatus(lq[t.id],t.minQty,t.standardQty)==='low').length;
   const warnN =tools.filter(t=>getStatus(lq[t.id],t.minQty,t.standardQty)==='warn').length;
   const pendN =alerts.filter(a=>a.status==='PENDING').length;
@@ -961,19 +1000,45 @@ async function renderMgmtDashboard() {
 }
 
 // ── UPDATE ──
+// FIX: Load logs first, then pre-fill each tool's qty from the most recent
+// log entry across ALL shifts (not just current shift, not standardQty).
 async function renderUpdate(c) {
   await loadTools();
-  tools.forEach(t=>{if(pendingQty[t.id]===undefined)pendingQty[t.id]=t.standardQty;});
+  await loadLogs(); // <-- ADDED: fetch latest logs so we can pre-fill correctly
+
+  // Build global latest qty (across all shifts) as the starting point
+  const globalLatest = buildGlobalLatestQty();
+
+  // Only pre-fill from server data if pendingQty not already set by user this session
+  tools.forEach(t => {
+    if (pendingQty[t.id] === undefined) {
+      // Use the most recently logged qty for this tool (any shift),
+      // falling back to standardQty only if no log entry exists at all
+      pendingQty[t.id] = globalLatest[t.id];
+    }
+  });
+
   c.innerHTML=`
     ${userBar()}
     <div class="sec-title">✏️ Update Qty</div>
     <div class="sec-sub">Actual counts for Shift ${currentShift}</div>
+    <div style="background:rgba(59,158,255,0.07);border:1px solid rgba(59,158,255,0.2);border-radius:12px;padding:14px 16px;margin-bottom:18px;font-size:14px;color:var(--text2);font-weight:700;line-height:1.6;">
+      ℹ️ Quantities are pre-filled from the <strong style="color:var(--accent)">last recorded entry</strong> (any shift). Adjust to your actual current count.
+    </div>
     ${tools.map(t=>{
-      const qty=pendingQty[t.id]!==undefined?pendingQty[t.id]:t.standardQty;
-      const d=t.standardQty-qty;
+      const qty = pendingQty[t.id] !== undefined ? pendingQty[t.id] : t.standardQty;
+      const d   = t.standardQty - qty;
+
+      // Find the most recent log entry for this tool to show "last recorded by"
+      const lastLog = logs.find(l => l.toolId === t.id);
+      const prevInfo = lastLog
+        ? `<div class="prev-shift-info">Last recorded: <strong>${lastLog.qty}</strong> units by Shift <strong>${lastLog.shift}</strong> · ${lastLog.employeeName}</div>`
+        : '';
+
       return `<div class="upd-card">
         <div class="upd-name">${t.name}</div>
         <div class="upd-std">Standard: <span>${t.standardQty}</span> units</div>
+        ${prevInfo}
         <div class="qty-ctrl">
           <button class="qty-btn" onclick="adjQty('${t.id}',-1,${t.standardQty})">−</button>
           <input class="qty-inp" type="number" min="0" id="qi-${t.id}" value="${qty}" oninput="onQtyInput('${t.id}',${t.standardQty})"/>
@@ -1006,7 +1071,7 @@ async function submitUpdate() {
   try {
     await api('saveLog',{shift:currentShift,employeeName:userName,employeeID:userEmpId,entries});
     toast('✓ Shift '+currentShift+' saved!','ok');
-    pendingQty={};
+    pendingQty={}; // Clear so next render re-fetches fresh from server
     setTimeout(()=>showTab('dashboard'),1200);
   } catch(e) {
     toast('Error: '+e.message,'err');
@@ -1048,7 +1113,6 @@ async function renderAlerts(c) {
 // ── LOGS ──
 async function renderLogs(c) {
   await loadLogs();
-  // also load vendor logs
   let vendorLogs=[];
   try { const r=await api('getVendorLogs'); vendorLogs=r.logs||[]; } catch(e){}
 
